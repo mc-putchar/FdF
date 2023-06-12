@@ -6,7 +6,7 @@
 /*   By: mcutura <mcutura@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 19:51:28 by mcutura           #+#    #+#             */
-/*   Updated: 2023/06/12 21:40:40 by mcutura          ###   ########.fr       */
+/*   Updated: 2023/06/12 22:53:38 by mcutura          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ int	set_offset(t_fdf *fdf, int x, int y)
 {
 	t_point	*p;
 
-	p = new_point(x, y, 0);
+	p = new_point(x, y, 0, 0);
 	if (!p)
 		return (EXIT_FAILURE);
 	fdf->offset = p;

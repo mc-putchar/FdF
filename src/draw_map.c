@@ -6,7 +6,7 @@
 /*   By: mcutura <mcutura@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 11:36:08 by mcutura           #+#    #+#             */
-/*   Updated: 2023/06/12 22:35:14 by mcutura          ###   ########.fr       */
+/*   Updated: 2023/06/12 23:00:46 by mcutura          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,12 +28,11 @@ t_point	*new_point(int x, int y, int z, int color)
 
 int	get_points(t_fdf *fdf)
 {
-	t_point	***points;
 	int		x;
 	int		y;
 
-	points = malloc(sizeof(t_point **) * fdf->map->height);
-	if (!points || set_offset(fdf, WIN_WIDTH / 2, 50))
+	fdf->points = malloc(sizeof(t_point **) * fdf->map->height);
+	if (!fdf->points || set_offset(fdf, WIN_WIDTH / 2, 50))
 		return (EXIT_FAILURE);
 	set_zoom(fdf, lowerof((WIN_WIDTH / (fdf->map->width)), \
 		(WIN_HEIGHT / (fdf->map->height))));
@@ -41,18 +40,17 @@ int	get_points(t_fdf *fdf)
 	while (++y < fdf->map->height)
 	{
 		x = -1;
-		points[y] = malloc(sizeof(t_point *) * fdf->map->width);
-		if (!points[y])
+		fdf->points[y] = malloc(sizeof(t_point *) * fdf->map->width);
+		if (!fdf->points[y])
 			return (EXIT_FAILURE);
 		while (++x < fdf->map->width)
 		{
-			points[y][x] = new_point(x * fdf->zoom, y * fdf->zoom, \
+			fdf->points[y][x] = new_point(x * fdf->zoom, y * fdf->zoom, \
 			fdf->map->z[y][x], fdf->map->c[y][x]);
-			if (!points[y][x])
+			if (!fdf->points[y][x])
 				return (EXIT_FAILURE);
 		}
 	}
-	fdf->points = points;
 	return (EXIT_SUCCESS);
 }
 
