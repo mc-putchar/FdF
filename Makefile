@@ -6,7 +6,7 @@
 #    By: mcutura <mcutura@student.42berlin.de>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/08 19:09:15 by mcutura           #+#    #+#              #
-#    Updated: 2023/06/12 22:04:33 by mcutura          ###   ########.fr        #
+#    Updated: 2023/06/12 23:38:11 by mcutura          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,8 @@ LIBFT := $(LIBFTDIR)/libft.a
 LIBMLX := $(LIBMLXDIR)/libmlx_Linux.a
 #--- SOURCES ---
 SRCS := $(addprefix $(SRCDIR)/, main.c error_handler.c parse_map.c ft_image.c \
-	ft_window.c draw_map.c projection.c hooks.c fdf_utils.c colors.c)
+	ft_window.c draw_map.c projection.c hooks.c fdf_utils.c colors.c \
+	update_frame.c)
 #--- OBJECTS ---
 OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS:.c=.o)))
 #--- HEADERS ---

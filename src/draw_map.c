@@ -6,7 +6,7 @@
 /*   By: mcutura <mcutura@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 11:36:08 by mcutura           #+#    #+#             */
-/*   Updated: 2023/06/12 23:00:46 by mcutura          ###   ########.fr       */
+/*   Updated: 2023/06/12 23:22:35 by mcutura          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,28 +70,7 @@ void	free_points(t_fdf *fdf)
 	free(fdf->points);
 }
 
-void	transform(t_fdf *fdf)
-{
-	int		x;
-	int		y;
-	t_point	*p;
-
-	y = 0;
-	while (y < fdf->map->height)
-	{
-		x = 0;
-		while (x < fdf->map->width)
-		{
-			p = fdf->points[y][x];
-			p->x = p->x * fdf->zoom + fdf->offset->x;
-			p->y = p->y * fdf->zoom + fdf->offset->y;
-			x++;
-		}
-		y++;
-	}
-}
-
-void	draw_map(t_fdf *fdf)
+void	draw_map(t_fdf *fdf, t_img *img)
 {
 	int	x;
 	int	y;
@@ -104,10 +83,10 @@ void	draw_map(t_fdf *fdf)
 		while (x < fdf->map->width)
 		{
 			if (x < fdf->map->width - 1)
-				draw_line(fdf->img, fdf->points[y][x], \
+				draw_line(img, fdf->points[y][x], \
 				fdf->points[y][x + 1]);
 			if (y < fdf->map->height - 1)
-				draw_line(fdf->img, fdf->points[y][x], \
+				draw_line(img, fdf->points[y][x], \
 				fdf->points[y + 1][x]);
 			x++;
 		}
