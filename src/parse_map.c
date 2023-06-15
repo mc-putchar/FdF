@@ -6,34 +6,13 @@
 /*   By: mcutura <mcutura@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/08 13:39:00 by mcutura           #+#    #+#             */
-/*   Updated: 2023/06/12 22:36:47 by mcutura          ###   ########.fr       */
+/*   Updated: 2023/06/15 13:21:45 by mcutura          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fdf.h"
 
-int	free_map(t_map *map)
-{
-	int	i;
-
-	if (!map)
-		return (EXIT_SUCCESS);
-	i = 0;
-	if (map->z && map->z[i])
-	{
-		while (i < map->height && map->z[i])
-		{
-			free(map->z[i]);
-			free(map->c[i++]);
-		}
-	}
-	free(map->z);
-	free(map->c);
-	free(map);
-	return (EXIT_SUCCESS);
-}
-
-int	get_values(t_map *map, char **split_line, int i)
+static int	get_values(t_map *map, char **split_line, int i)
 {
 	int		j;
 	char	*tmp;
@@ -43,8 +22,8 @@ int	get_values(t_map *map, char **split_line, int i)
 		++j;
 	if (!map->width)
 		map->width = j;
-	else if (map->width != j)
-		return (EXIT_FAILURE);
+	else if (map->width != j && CHECK_ROWS)
+		return (--(map->init), EXIT_FAILURE);
 	map->z[i] = malloc(sizeof(int) * j);
 	map->c[i] = malloc(sizeof(int) * j);
 	if (!map->z[i] || !map->c[i])
@@ -62,85 +41,93 @@ int	get_values(t_map *map, char **split_line, int i)
 	return (EXIT_SUCCESS);
 }
 
-int	convert_map(char *str, t_map *map)
+static ssize_t	get_file_size(int fd, int *line_count)
 {
-	char	**split_line;
-	char	**split_str;
+	ssize_t	size;
+	ssize_t	r;
+	char	buf[READ_BLOCK];
 	int		i;
 
+	size = 0;
+	r = read(fd, buf, READ_BLOCK);
+	while (r > 0)
+	{
+		size += r;
+		i = 0;
+		while (i < r)
+			if (buf[i++] == '\n')
+				(*line_count)++;
+		r = read(fd, buf, READ_BLOCK);
+	}
+	if (r < 0)
+		return (-1);
+	if (fd > 2)
+		close(fd);
+	return (size);
+}
+
+static void	read_map(int fd, t_map *map)
+{
+	char	*line;
+	char	**split_line;
+
+	map->width = 0;
 	map->z = malloc(sizeof(int *) * map->height);
 	map->c = malloc(sizeof(int *) * map->height);
 	if (!map->z || !map->c)
-		return (EXIT_FAILURE);
-	split_str = ft_split(str, '\n');
-	free(str);
-	if (!split_str)
-		return (EXIT_FAILURE);
-	i = 0;
-	while (split_str[i])
-	{
-		split_line = ft_split(split_str[i], ' ');
-		if (!split_line)
-			return (free_arr(split_str), EXIT_FAILURE);
-		if (get_values(map, split_line, i))
-			return (free_arr(split_str), free_arr(split_line), EXIT_FAILURE);
-		free_arr(split_line);
-		i++;
-	}
-	free_arr(split_str);
-	return (EXIT_SUCCESS);
-}
-
-void	read_map(int fd, t_map *map)
-{
-	char	*line;
-	char	*map_str;
-	char	*tmp;
-
-	map->height = 0;
-	map->width = 0;
-	map_str = ft_strdup("");
+		error_handler(ENOMEM, NULL, &free_map, map);
 	line = get_next_line(fd);
 	while (line)
 	{
-		tmp = ft_strjoin(map_str, line);
-		free(map_str);
-		if (!tmp)
-			error_handler(ENOMEM, NULL, &free_map, map);
+		split_line = ft_split(line, ' ');
 		free(line);
-		map_str = tmp;
+		if (!split_line)
+			error_handler(ENOMEM, NULL, &free_map, map);
+		if (get_values(map, split_line, (map->init)++) && \
+			free_arr(split_line) && fgnl(fd))
+			error_handler(EMAPINV, "Failed to read map", &free_map, map);
+		(void)free_arr(split_line);
 		line = get_next_line(fd);
-		map->height++;
 	}
-	if (map->height == 0)
-		error_handler(EINVAL, NULL, &free_map, map);
 	if (fd > 2)
 		close(fd);
-	if (convert_map(map_str, map))
-		error_handler(ENOMEM, NULL, &free_map, map);
 }
 
-int	parse_map(char *path, t_fdf *fdf)
+static int	get_file_fd(char *path)
+{
+	if (!path)
+		return (-1);
+	if (path[0] == '-' && !path[1])
+		return (0);
+	if (ft_strncmp(path + ft_strlen(path) - 4, ".fdf", 4))
+		return (-1);
+	return (open(path, O_RDONLY));
+}
+
+t_map	*parse_map(char *path)
 {
 	int		fd;
 	t_map	*map;
 
-	if (!path)
-		error_handler(EINVAL, NULL, NULL, NULL);
 	map = malloc(sizeof(t_map));
 	if (!map)
-		error_handler(errno, NULL, NULL, NULL);
-	if (path[0] == '-' && !path[1])
-		fd = 0;
-	else
-	{
-		if (ft_strncmp(path + ft_strlen(path) - 4, ".fdf", 4))
-			error_handler(EINVAL, path, &free_map, map);
-		fd = open(path, O_RDONLY);
-		if (fd < 0)
-			error_handler(errno, path, &free_map, map);
-	}
+		error_handler(ENOMEM, NULL, NULL, NULL);
+	map->init = 0;
+	map->height = 0;
+	errno = 0;
+	fd = get_file_fd(path);
+	if (fd < 0)
+		error_handler(errno, path, &free_map, map);
+	if (get_file_size(fd, &map->height) < 0)
+		error_handler(errno, path, &free_map, map);
+	if (map->height == 0)
+		error_handler(EINVAL, path, &free_map, map);
+	map->path = path;
+	fd = get_file_fd(path);
+	if (fd < 0)
+		error_handler(errno, path, &free_map, map);
 	read_map(fd, map);
-	fdf->map = map;
-	return (EXIT_SUCCESS);
+	if (normalize_colors(map))
+		error_handler(ENOMEM, NULL, &free_map, map);
+	return (map);
 }

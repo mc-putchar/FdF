@@ -6,7 +6,7 @@
 #    By: mcutura <mcutura@student.42berlin.de>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/02 12:21:15 by mcutura           #+#    #+#              #
-#    Updated: 2023/06/12 20:17:28 by mcutura          ###   ########.fr        #
+#    Updated: 2023/06/14 07:35:23 by mcutura          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,7 @@ FILES := ft_atoi.c ft_bzero.c ft_calloc.c ft_isalnum.c ft_isascii.c \
 		 ft_split_blocks.c ft_swap.c ft_abs.c
 EXTRASRC := ft_printf.c ft_printf_utils.c ft_printf_converters.c \
 		get_next_line.c ft_printf_converters_hex.c ft_printf_handle_flags.c \
-		get_next_line_utils.c ft_atoi_base.c
+		get_next_line_utils.c ft_atoi_base.c ft_clampd.c
 BONUSFILES := ft_lstadd_front.c ft_lstadd_back.c ft_lstdelone.c ft_lstclear.c \
 			  ft_lstnew.c ft_lstsize.c ft_lstiter.c ft_lstlast.c ft_lstmap.c
 OBJS := $(FILES:%.c=%.o)

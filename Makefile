@@ -6,7 +6,7 @@
 #    By: mcutura <mcutura@student.42berlin.de>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/08 19:09:15 by mcutura           #+#    #+#              #
-#    Updated: 2023/06/12 23:38:11 by mcutura          ###   ########.fr        #
+#    Updated: 2023/06/15 14:03:21 by mcutura          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,17 +21,19 @@ LIBMLXDIR := libmlx
 LIBFT := $(LIBFTDIR)/libft.a
 LIBMLX := $(LIBMLXDIR)/libmlx_Linux.a
 #--- SOURCES ---
-SRCS := $(addprefix $(SRCDIR)/, main.c error_handler.c parse_map.c ft_image.c \
-	ft_window.c draw_map.c projection.c hooks.c fdf_utils.c colors.c \
-	update_frame.c)
+SRCS := $(addprefix $(SRCDIR)/, main.c error_handler.c bresenham.c camera.c \
+	colors.c draw_map.c freez.c hooks.c init.c menu.c normals.c parse_map.c \
+	transforms.c)
 #--- OBJECTS ---
 OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS:.c=.o)))
 #--- HEADERS ---
-HEADERS := $(addprefix $(INCDIR)/, fdf.h ft_window.h libft.h get_next_line.h \
-			ft_printf.h ft_image.h keycodes.h error_handler.h)
+HEADERS := $(addprefix $(INCDIR)/, fdf.h keycodes.h error_handler.h)
+LIBFTHEADERS := $(addprefix $(LIBFTDIR)/, libft.h get_next_line.h ft_printf.h)
 MLXHEADER := /usr/local/include
 #--- FLAGS ---
-CFLAGS := -Wall -Wextra -Werror -I$(INCDIR)
+CC := cc
+CFLAGS := -Wall -Wextra -Werror -I$(INCDIR) -I$(LIBFTDIR) -I$(LIBMLXDIR) \
+	-I$(MLXHEADER)
 LDFLAGS := -L$(LIBFTDIR) -L$(LIBMLXDIR)
 LDLIBS := -lft -lmlx
 LFLAGS := -lbsd -lXext -lX11 -lm
@@ -43,16 +45,11 @@ all: $(NAME)
 $(NAME): $(HEADERS) $(MLXHEADER) $(LIBFT) $(LIBMLX) $(OBJS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LDFLAGS) $(LDLIBS) $(LFLAGS)
 
-$(LIBFT):
+$(LIBFT): $(LIBFTHEADERS)
 	$(MAKE) -C $(LIBFTDIR)
 
 $(LIBMLX):
 	$(MAKE) -C $(LIBMLXDIR)
-
-$(HEADERS):
-	ln $(LIBFTDIR)/libft.h $(INCDIR)/libft.h
-	ln $(LIBFTDIR)/get_next_line.h $(INCDIR)/get_next_line.h
-	ln $(LIBFTDIR)/ft_printf.h $(INCDIR)/ft_printf.h
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -68,9 +65,6 @@ clean:
 
 fclean: clean
 	$(RM) $(NAME)
-	$(RM) $(INCDIR)/libft.h
-	$(RM) $(INCDIR)/get_next_line.h
-	$(RM) $(INCDIR)/ft_printf.h
 	$(MAKE) -C $(LIBFTDIR) fclean
 
 re: fclean all

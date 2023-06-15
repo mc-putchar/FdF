@@ -6,7 +6,7 @@
 /*   By: mcutura <mcutura@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 12:18:12 by mcutura           #+#    #+#             */
-/*   Updated: 2023/06/12 20:16:43 by mcutura          ###   ########.fr       */
+/*   Updated: 2023/06/14 07:34:53 by mcutura          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ void	ft_bzero(void *s, size_t n);
 void	*ft_calloc(size_t nmemb, size_t size);
 
 int		ft_atoi_base(char *str, char *base);
+double	ft_clampd(double d, double min, double max);
 
 void	*ft_memset(void *s, int c, size_t n);
 void	*ft_memmove(void *dest, const void *src, size_t n);

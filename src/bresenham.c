@@ -1,39 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_image.c                                         :+:      :+:    :+:   */
+/*   bresenham.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mcutura <mcutura@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/08 21:24:38 by mcutura           #+#    #+#             */
-/*   Updated: 2023/06/12 22:28:29 by mcutura          ###   ########.fr       */
+/*   Updated: 2023/06/15 08:26:23 by mcutura          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_image.h"
+#include "fdf.h"
 
-t_img	*new_image(struct s_fdf *fdf, int width, int height)
+void	put_pixel(t_fdf *fdf, int x, int y, int color)
 {
-	t_img	*img;
+	char		*dst;
 
-	img = malloc(sizeof(t_img));
-	if (!img)
-		return (NULL);
-	img->img = mlx_new_image(fdf->window->mlx_ptr, width, height);
-	img->addr = mlx_get_data_addr(img->img, &img->bpp, &img->line_len, \
-		&img->endian);
-	img->width = width;
-	img->height = height;
-	return (img);
-}
-
-void	put_pixel(t_img *img, int x, int y, int color)
-{
-	char	*dst;
-
-	if (x < 0 || x >= img->width || y < 0 || y >= img->height)
+	if (x < 0 || x >= IMG_WIDTH || y < 0 || y >= IMG_HEIGHT)
 		return ;
-	dst = img->addr + (y * img->line_len + x * (img->bpp / 8));
+	dst = fdf->img_data->addr + (y * fdf->img_data->size_line + x * \
+		(fdf->img_data->bpp / 8));
 	*(unsigned int *)dst = color;
 }
 
@@ -70,7 +56,7 @@ static void	get_next_point(t_point *cur, t_point *d, t_point *quad, int e[2])
 	}
 }
 
-void	draw_line(t_img *img, t_point *p1, t_point *p2)
+void	draw_line(t_fdf *fdf, t_point *p1, t_point *p2)
 {
 	t_point	delta;
 	t_point	*quad;
@@ -86,8 +72,9 @@ void	draw_line(t_img *img, t_point *p1, t_point *p2)
 		return ;
 	while (cur.x != p2->x || cur.y != p2->y)
 	{
-		put_pixel(img, cur.x, cur.y, get_color(&cur, p1, p2, &delta));
+		put_pixel(fdf, cur.x, cur.y, get_color(&cur, p1, p2, &delta));
 		get_next_point(&cur, &delta, quad, error);
 	}
+	put_pixel(fdf, cur.x, cur.y, get_color(&cur, p1, p2, &delta));
 	free(quad);
 }

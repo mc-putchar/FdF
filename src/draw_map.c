@@ -6,90 +6,50 @@
 /*   By: mcutura <mcutura@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 11:36:08 by mcutura           #+#    #+#             */
-/*   Updated: 2023/06/12 23:22:35 by mcutura          ###   ########.fr       */
+/*   Updated: 2023/06/15 13:26:53 by mcutura          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fdf.h"
 
-t_point	*new_point(int x, int y, int z, int color)
+static void	set_point(t_point *point, int x, int y, t_fdf *fdf)
 {
-	t_point	*point;
-
-	point = malloc(sizeof(t_point));
 	if (!point)
-		return (NULL);
+		return ;
 	point->x = x;
 	point->y = y;
-	point->z = z;
-	point->color = color;
-	return (point);
+	point->z = fdf->map->z[y][x];
+	if (fdf->color_mode == COLOR_DEFAULT)
+		point->color = fdf->map->c[y][x];
+	else if (fdf->color_mode == COLOR_HEIGHT)
+		point->color = fdf->map->c_norm[y][x];
+	transform(point, fdf);
 }
 
-int	get_points(t_fdf *fdf)
+void	draw_map(t_fdf *fdf)
 {
 	int		x;
 	int		y;
+	t_point	curr;
+	t_point	next;
 
-	fdf->points = malloc(sizeof(t_point **) * fdf->map->height);
-	if (!fdf->points || set_offset(fdf, WIN_WIDTH / 2, 50))
-		return (EXIT_FAILURE);
-	set_zoom(fdf, lowerof((WIN_WIDTH / (fdf->map->width)), \
-		(WIN_HEIGHT / (fdf->map->height))));
 	y = -1;
 	while (++y < fdf->map->height)
 	{
 		x = -1;
-		fdf->points[y] = malloc(sizeof(t_point *) * fdf->map->width);
-		if (!fdf->points[y])
-			return (EXIT_FAILURE);
 		while (++x < fdf->map->width)
 		{
-			fdf->points[y][x] = new_point(x * fdf->zoom, y * fdf->zoom, \
-			fdf->map->z[y][x], fdf->map->c[y][x]);
-			if (!fdf->points[y][x])
-				return (EXIT_FAILURE);
-		}
-	}
-	return (EXIT_SUCCESS);
-}
-
-void	free_points(t_fdf *fdf)
-{
-	int	x;
-	int	y;
-
-	y = 0;
-	while (y < fdf->map->height)
-	{
-		x = 0;
-		while (x < fdf->map->width)
-			free(fdf->points[y][x++]);
-		free(fdf->points[y++]);
-	}
-	free(fdf->points);
-}
-
-void	draw_map(t_fdf *fdf, t_img *img)
-{
-	int	x;
-	int	y;
-
-	y = 0;
-	transform(fdf);
-	while (y < fdf->map->height)
-	{
-		x = 0;
-		while (x < fdf->map->width)
-		{
+			set_point(&curr, x, y, fdf);
 			if (x < fdf->map->width - 1)
-				draw_line(img, fdf->points[y][x], \
-				fdf->points[y][x + 1]);
+			{
+				set_point(&next, x + 1, y, fdf);
+				draw_line(fdf, &curr, &next);
+			}
 			if (y < fdf->map->height - 1)
-				draw_line(img, fdf->points[y][x], \
-				fdf->points[y + 1][x]);
-			x++;
+			{
+				set_point(&next, x, y + 1, fdf);
+				draw_line(fdf, &curr, &next);
+			}
 		}
-		y++;
 	}
 }
